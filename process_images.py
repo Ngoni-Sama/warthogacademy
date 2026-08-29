@@ -1,20 +1,19 @@
 """
-Warthog Academy — image processor.
+Warthog Academy — image processor (reproducible asset build).
 
-Turns the two original images into web-ready assets:
-  - Crops the people from the enrollment flyer into hero + gallery photos.
-  - Removes the background from the crest to produce a transparent logo.png.
+Regenerates the web-ready images in assets/img/ from the originals in
+assets/img/raw/. Run this again whenever you replace a source image.
 
-Usage:
-    pip install pillow rembg onnxruntime
+    pip install pillow
     python process_images.py
 
-Put source files here first:
-    assets/img/raw/flyer.jpg   (the enrollment flyer)
-    assets/img/raw/logo.jpg    (the crest)
+Source files expected in assets/img/raw/:
+    logo.png              transparent crest (already background-removed)
+    students_reading.jpg  students in the hallway with books
+    students_learning.jpg students studying at a desk
 
-Crop boxes are fractions of the flyer's width/height (left, top, right, bottom),
-so they scale to any flyer resolution. Tweak them if your flyer layout differs.
+If your crest still has a white background, install rembg and it will be
+removed automatically:  pip install rembg onnxruntime
 """
 import os
 from PIL import Image
@@ -23,52 +22,58 @@ RAW = os.path.join("assets", "img", "raw")
 OUT = os.path.join("assets", "img")
 os.makedirs(OUT, exist_ok=True)
 
-# Fractional crop boxes (left, top, right, bottom) for the top flyer panel.
-CROPS = {
-    "hero-student.png": (0.02, 0.11, 0.26, 0.47),   # pointing student, left
-    "gallery-1.png":    (0.35, 0.12, 0.62, 0.48),   # two students with books, centre
-    "gallery-2.png":    (0.62, 0.10, 0.99, 0.50),   # students reading at desk, right
-    "gallery-3.png":    (0.35, 0.12, 0.62, 0.48),   # reuse centre pair
-}
+
+def save_jpg(im, name, w, q=86):
+    im = im.convert("RGB")
+    h = round(im.height * w / im.width)
+    im.resize((w, h), Image.LANCZOS).save(
+        os.path.join(OUT, name), "JPEG", quality=q, optimize=True, progressive=True
+    )
+    print(f"[ok] {name} ({w}px)")
 
 
-def crop_flyer():
-    src = os.path.join(RAW, "flyer.jpg")
-    if not os.path.exists(src):
-        print(f"[skip] {src} not found — add the flyer to crop people from it.")
+def build_logo():
+    src_png = os.path.join(RAW, "logo.png")
+    src_jpg = os.path.join(RAW, "logo.jpg")
+    if os.path.exists(src_png):
+        im = Image.open(src_png).convert("RGBA")
+    elif os.path.exists(src_jpg):
+        im = Image.open(src_jpg)
+        try:
+            from rembg import remove
+            import io
+            buf = io.BytesIO(); im.save(buf, "PNG")
+            im = Image.open(io.BytesIO(remove(buf.getvalue()))).convert("RGBA")
+            print("[ok] removed logo background with rembg")
+        except Exception as exc:
+            print(f"[warn] rembg unavailable ({exc}); using logo as-is")
+            im = im.convert("RGBA")
+    else:
+        print("[skip] no logo in raw/ — add logo.png (transparent) or logo.jpg")
         return
-    im = Image.open(src).convert("RGB")
-    w, h = im.size
-    for name, (l, t, r, b) in CROPS.items():
-        box = (int(l * w), int(t * h), int(r * w), int(b * h))
-        im.crop(box).save(os.path.join(OUT, name))
-        print(f"[ok] wrote {name} from {box}")
+    im.resize((512, 512), Image.LANCZOS).save(os.path.join(OUT, "logo.png"))
+    im.resize((512, 512), Image.LANCZOS).save(os.path.join(OUT, "gallery-4.png"))
+    print("[ok] logo.png + gallery-4.png")
 
 
-def process_logo():
-    src = os.path.join(RAW, "logo.jpg")
-    if not os.path.exists(src):
-        print(f"[skip] {src} not found — add the crest to make a transparent logo.")
-        return
-    out = os.path.join(OUT, "logo.png")
-    try:
-        from rembg import remove  # noqa: WPS433
-        with open(src, "rb") as f:
-            data = remove(f.read())
-        with open(out, "wb") as f:
-            f.write(data)
-        print(f"[ok] background removed -> {out}")
-    except Exception as exc:  # rembg not installed / model download failed
-        print(f"[warn] rembg unavailable ({exc}); copying logo without bg removal.")
-        Image.open(src).convert("RGBA").save(out)
-        # gallery crest tile
-    try:
-        Image.open(out).convert("RGBA").save(os.path.join(OUT, "gallery-4.png"))
-    except Exception:
-        pass
+def build_photos():
+    reading = os.path.join(RAW, "students_reading.jpg")
+    learning = os.path.join(RAW, "students_learning.jpg")
+    if os.path.exists(reading):
+        im = Image.open(reading); w, h = im.size
+        cw = int(h * 4 / 5); left = (w - cw) // 2
+        save_jpg(im.crop((left, 0, left + cw, h)), "hero-student.jpg", 720)  # hero portrait
+        save_jpg(im, "gallery-1.jpg", 1000)
+        save_jpg(im.crop((int(w * 0.5), int(h * 0.06), int(w * 0.98), h)), "gallery-3.jpg", 700)
+    else:
+        print("[skip] students_reading.jpg not found")
+    if os.path.exists(learning):
+        save_jpg(Image.open(learning), "gallery-2.jpg", 1000)
+    else:
+        print("[skip] students_learning.jpg not found")
 
 
 if __name__ == "__main__":
-    crop_flyer()
-    process_logo()
+    build_logo()
+    build_photos()
     print("Done. Refresh the site to see the images.")
