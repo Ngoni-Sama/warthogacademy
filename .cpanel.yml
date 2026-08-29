@@ -1,0 +1,10 @@
+---
+# cPanel deployment. With Git Version Control, the repo is cloned into the
+# application root, so on "Deploy HEAD Commit" (or after a pull) we just ensure
+# dependencies are installed and restart Passenger. Adjust DEPLOYPATH if your
+# application root differs.
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/canchemc/warthogacademy
+    - /bin/cp -R ./* $DEPLOYPATH 2>/dev/null || true
+    - cd $DEPLOYPATH && /bin/mkdir -p tmp && /bin/touch tmp/restart.txt

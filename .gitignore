@@ -5,6 +5,11 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Node
+node_modules/
+npm-debug.log*
+tmp/
+
 # Python (image processor)
 __pycache__/
 *.pyc

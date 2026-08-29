@@ -1,48 +1,66 @@
 # Warthog Academy — Website
 
-A modern, single-page static website for **Warthog Academy** (Ministry of Primary & Secondary Education, Zimbabwe). Boarding & day school, Forms 1–4.
+A modern, single-page website for **Warthog Academy** — a Zimbabwean secondary school (boarding & day, Forms 1–4).
 
-Built with plain HTML/CSS/JS — no build step. Design uses **glassmorphism** cards, **pill buttons**, and the school palette (deep red, royal purple, gold).
+Plain HTML/CSS/JS (no build step) with a light, classic design — frosted-white cards, pill buttons, and the school palette (red / purple / gold) as accents. A tiny Express server (`server.js`) lets it run on Node.js hosting (cPanel Passenger) as well as any static host.
 
 ## Sections
-Navbar · Hero · About Us · Vision / Mission / Values (DROAR) · Why Enroll With Us · Enrollment banner · Gallery · Contact + Social · Footer.
+Navbar · Hero · About Us · Vision / Mission / Values (DROAR) · Why Enroll With Us · Enrollment banner · Gallery · Contact + Social · Floating chat widget (FAQ bot + WhatsApp handoff).
 
 ## Run locally
-Just open `index.html` in a browser, or serve it:
-
 ```bash
-python -m http.server 8000
-# then visit http://localhost:8000
+npm install
+npm start          # http://localhost:3000
+# or, no Node:  python -m http.server 8000
 ```
 
-## Deploy (GitHub Pages)
-Repo Settings → Pages → Source: `main` / root. The site is fully static.
+## Deploy
 
-## Adding real photos
-The site references images in `assets/img/`. Until they exist, styled placeholders show automatically. Add these files to replace them:
+### Option A — cPanel Node.js app (this server: canchemc@quokka)
+The repo already contains `server.js`, `package.json` and `.cpanel.yml`.
 
-| File | Used for |
-|------|----------|
-| `logo.png` | School crest (navbar/footer/favicon) — ideally background-removed, transparent PNG |
-| `hero-student.png` | Hero photo (a cropped student) |
-| `gallery-1.png` … `gallery-4.png` | Gallery tiles |
+1. **cPanel → Git™ Version Control → Create.**
+   - Clone URL: `https://github.com/Ngoni-Sama/warthogacademy.git`
+   - Repository Path: `warthogacademy`  → clones to `/home/canchemc/warthogacademy`
+   - Branch: `main`
+2. **cPanel → Setup Node.js App → Create Application:**
 
-### Auto-processing the flyer & logo
-Drop the two original images into `assets/img/raw/` as:
-- `assets/img/raw/flyer.jpg` (the enrollment flyer)
-- `assets/img/raw/logo.jpg` (the crest)
+   | Field | Value |
+   |-------|-------|
+   | Node.js version | 18.x or 20.x (any 18+ LTS offered) |
+   | Application mode | **Production** |
+   | Application root | `warthogacademy` |
+   | Application URL | your domain/subdomain (e.g. `warthogacademy.canchem.co.zw`) |
+   | Application startup file | `server.js` |
+   | Environment variables | **none required** (that's why the search shows "No result found") |
 
-Then run:
+3. Click **Create**, then **Run NPM Install**, then **Start App**. Done.
 
+**Updating after a `git push` (GitHub → server):**
+- cPanel → **Git Version Control → Manage → Pull or Deploy HEAD Commit**, then in **Setup Node.js App** click **Restart**.
+- Or over SSH — see below.
+
+### Option B — GitHub Pages (static mirror)
+Settings → Pages → Source `main` / root → https://ngoni-sama.github.io/warthogacademy/
+
+## Update over SSH
 ```bash
-pip install pillow rembg onnxruntime
+ssh canchemc@quokka                 # your cPanel SSH login
+cd ~/warthogacademy
+git pull origin main
+npm install --production            # only needed if dependencies changed
+mkdir -p tmp && touch tmp/restart.txt   # Passenger picks up the restart
+```
+
+## Images
+Web-ready images live in `assets/img/`; originals are in `assets/img/raw/`. To regenerate after replacing a source:
+```bash
+pip install pillow          # add: rembg onnxruntime  (only if the crest needs bg removal)
 python process_images.py
 ```
 
-This crops the people from the flyer into gallery/hero images and removes the background from the crest to produce a clean transparent `logo.png`. Adjust the crop boxes near the top of `process_images.py` if the flyer layout differs.
-
-## Content source
-All text (name, tagline, features, contacts, motto) was taken from the official Warthog Academy enrollment flyer. Vision & Mission text is a first draft — edit freely in `index.html`.
+## Chat bot
+The floating widget answers common questions (fees, enrollment, boarding, subjects, contact) and hands off to WhatsApp. To upgrade to a real AI bot (Cloudflare Workers AI, like the CanChem bot), set `BOT_ENDPOINT` in `script.js` to your Worker URL.
 
 ## Contact
 - +263 772 620 044
