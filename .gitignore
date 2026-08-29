@@ -1,0 +1,15 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Python (image processor)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Keep the assets/img/raw folder but ignore large source originals if desired
+# assets/img/raw/*.jpg
