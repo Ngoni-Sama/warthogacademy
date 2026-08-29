@@ -2,15 +2,12 @@
   "name": "warthogacademy",
   "version": "1.0.0",
   "private": true,
-  "description": "Warthog Academy school website (static site served by a small Express app for cPanel Node.js hosting).",
+  "description": "Warthog Academy school website — static site served by a zero-dependency Node server (cPanel Node.js / Passenger friendly).",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "engines": {
-    "node": ">=18"
-  },
-  "dependencies": {
-    "express": "^4.19.2"
+    "node": ">=14"
   }
 }
