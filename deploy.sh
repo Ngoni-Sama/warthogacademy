@@ -22,8 +22,9 @@ git fetch --quiet origin main
 LOCAL=$(git rev-parse HEAD)
 REMOTE=$(git rev-parse origin/main)
 
-# Nothing changed since last run → do nothing (keeps cron quiet/cheap)
-if [ "$LOCAL" = "$REMOTE" ] && [ -f "$DOCROOT/index.html" ]; then
+# Nothing changed since last run → do nothing (keeps cron quiet/cheap).
+# Set FORCE=1 to deploy regardless (useful for the very first deploy).
+if [ -z "$FORCE" ] && [ "$LOCAL" = "$REMOTE" ] && [ -f "$DOCROOT/index.html" ]; then
   exit 0
 fi
 
