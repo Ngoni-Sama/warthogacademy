@@ -1,10 +1,10 @@
 ---
-# cPanel deployment. With Git Version Control, the repo is cloned into the
-# application root, so on "Deploy HEAD Commit" (or after a pull) we just ensure
-# dependencies are installed and restart Passenger. Adjust DEPLOYPATH if your
-# application root differs.
+# cPanel Git™ Version Control deploy (one-click "Deploy HEAD Commit").
+# Copies ONLY the web files into the domain's document root. Adjust DEPLOYPATH
+# if cPanel → Domains shows a different Document Root for warthogacademy.co.zw.
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/canchemc/warthogacademy
-    - /bin/cp -R ./* $DEPLOYPATH 2>/dev/null || true
-    - cd $DEPLOYPATH && /bin/mkdir -p tmp && /bin/touch tmp/restart.txt
+    - export DEPLOYPATH=/home/canchemc/warthogacademy.co.zw
+    - /bin/mkdir -p $DEPLOYPATH/assets/img
+    - /bin/cp -a index.html styles.css script.js $DEPLOYPATH/
+    - /bin/cp -a assets/img/*.png assets/img/*.jpg $DEPLOYPATH/assets/img/
