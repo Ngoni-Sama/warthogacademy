@@ -4,7 +4,7 @@
 # if cPanel → Domains shows a different Document Root for warthogacademy.co.zw.
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/canchemc/warthogacademy.co.zw
+    - export DEPLOYPATH=/home/canchemc/domains/warthogacademy.co.zw/public_html
     - /bin/mkdir -p $DEPLOYPATH/assets/img
     - /bin/cp -a index.html styles.css script.js $DEPLOYPATH/
     - /bin/cp -a assets/img/*.png assets/img/*.jpg $DEPLOYPATH/assets/img/

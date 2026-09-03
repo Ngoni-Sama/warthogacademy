@@ -7,13 +7,14 @@
 #   REPO     git working copy (default: ~/wa-src)
 #   DOCROOT  the domain's document root (default: ~/warthogacademy.co.zw)
 #
-# One-off:   DOCROOT=~/warthogacademy.co.zw bash ~/wa-src/deploy.sh
-# Cron (10m): */10 * * * * DOCROOT=$HOME/warthogacademy.co.zw /bin/bash $HOME/wa-src/deploy.sh >> $HOME/wa-src/deploy.log 2>&1
+# One-off:   bash ~/wa-src/deploy.sh
+# Cron (10m): */10 * * * * /bin/bash $HOME/wa-src/deploy.sh >> $HOME/wa-src/deploy.log 2>&1
 # ─────────────────────────────────────────────────────────────
 set -e
 
 REPO="${REPO:-$HOME/wa-src}"
-DOCROOT="${DOCROOT:-$HOME/warthogacademy.co.zw}"
+# DirectAdmin document root for the domain
+DOCROOT="${DOCROOT:-$HOME/domains/warthogacademy.co.zw/public_html}"
 
 cd "$REPO"
 
